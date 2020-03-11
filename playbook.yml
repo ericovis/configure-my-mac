@@ -1,0 +1,76 @@
+- hosts: localhost
+  become: true
+  vars:
+    username: ericovis
+    ansible_python_interpreter: /usr/bin/python3
+    zsh_plugins:
+      - git
+      - pyenv
+      - ng
+      - aws
+    extra_paths:
+      - '~/Library/Python/3.7/bin'
+
+  tasks:  
+    - name: Enable passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^{{ username }}'
+        line: '{{ username }} ALL = (ALL) NOPASSWD:ALL'    
+  
+    - name: Ensure NVM is installed
+      become: false
+      shell: >
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+      args:
+        creates: "~/.nvm/nvm.sh"
+
+    - name: Ensure needed packages are present
+      become: false
+      homebrew:
+        name: 
+          - htop
+          - ncdu
+          - rbenv
+          - ruby-build
+          - pyenv
+        state: present
+        update_homebrew: true
+  
+    - name: Ensure gentoo theme is set
+      become: false
+      lineinfile:
+        dest: ~/.zshrc
+        state: present
+        backrefs: true
+        regexp: 'ZSH_THEME=.*'
+        line: 'ZSH_THEME="gentoo"'
+
+    - name: Ensure LANG var is set
+      become: false
+      lineinfile:
+        dest: ~/.zshrc
+        state: present
+        backrefs: true
+        regexp: 'export LANG=.*'
+        line: 'export LANG=en_US.UTF-8'
+  
+    - name: Ensure zsh plugins are set
+      become: false
+      lineinfile:
+        dest: ~/.zshrc
+        state: present
+        backrefs: true
+        regexp: 'plugins=.*'
+        line: 'plugins=( {{ zsh_plugins | join(" ") }} )'
+
+    - name: Ensure extra PATH variables are on .zshrc
+      become: false
+      lineinfile:
+        dest: ~/.zshrc
+        state: present
+        backrefs: true
+        regexp: 'export PATH=(["]*)((?!.*?{{ item }}).*?)(["]*)$'
+        line: 'export PATH=\1\2:{{ item }}\3'
+      with_items: "{{ extra_paths }}"
+
