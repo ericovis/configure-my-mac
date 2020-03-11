@@ -5,7 +5,7 @@
     ansible_python_interpreter: /usr/bin/python3
     zsh_plugins:
       - git
-      - pyenv
+      - pipenv
       - ng
       - aws
     extra_paths:
@@ -17,6 +17,13 @@
         path: /etc/sudoers
         regexp: '^{{ username }}'
         line: '{{ username }} ALL = (ALL) NOPASSWD:ALL'    
+
+    - name: Ensure a symlink for pip is present
+      file:
+        src: /usr/bin/pip3
+        dest: /usr/local/bin/pip
+        state: link
+        force: true
   
     - name: Ensure NVM is installed
       become: false
@@ -25,7 +32,7 @@
       args:
         creates: "~/.nvm/nvm.sh"
 
-    - name: Ensure needed packages are present
+    - name: Ensure needed brew packages are present
       become: false
       homebrew:
         name: 
@@ -37,6 +44,15 @@
         state: present
         update_homebrew: true
   
+    - name: Ensure needed pip packages are present
+      become: false
+      pip:
+        name: 
+          - awscli
+          - pipenv
+        state: present
+        extra_args: --user
+    
     - name: Ensure gentoo theme is set
       become: false
       lineinfile:
