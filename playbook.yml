@@ -9,7 +9,6 @@
       - ng
       - aws
     extra_paths:
-      - '$HOME/Library/Python/3.7/bin'
       - "$HOME/bin"
       - "$PYENV_ROOT/bin"
       - "$PYENV_ROOT/shims"
@@ -24,13 +23,6 @@
         regexp: '^{{ username }}'
         line: '{{ username }} ALL = (ALL) NOPASSWD:ALL'    
 
-    - name: Ensure a symlink for pip is present
-      file:
-        src: /usr/bin/pip3
-        dest: /usr/local/bin/pip
-        state: link
-        force: true
-  
     - name: Ensure NVM is installed
       become: false
       shell: >
@@ -50,15 +42,6 @@
         state: present
         update_homebrew: true
   
-    - name: Ensure needed pip packages are present
-      become: false
-      pip:
-        name: 
-          - awscli
-          - pipenv
-        state: present
-        extra_args: --user
-    
     - name: Ensure gentoo theme is set
       become: false
       lineinfile:
@@ -97,4 +80,4 @@
         dest: ~/.zshrc
         state: present
         regexp: 'export PATH=.*'
-        line: 'export PATH={{ extra_paths | join(":") }}'
+        line: 'export PATH={{ extra_paths | join(":") }}:$PATH'
