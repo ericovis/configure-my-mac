@@ -9,10 +9,12 @@
       - ng
       - aws
     extra_paths:
-      - '~/Library/Python/3.7/bin'
-      - "~/bin"
+      - '$HOME/Library/Python/3.7/bin'
+      - "$HOME/bin"
+      - "$PYENV_ROOT/bin"
+      - "$PYENV_ROOT/shims"
     env_vars:
-      PYENV_ROOT: ~/.pyenv
+      PYENV_ROOT: $HOME/.pyenv
       LANG: en_US.UTF-8
 
   tasks:  
@@ -94,8 +96,5 @@
       lineinfile:
         dest: ~/.zshrc
         state: present
-        backrefs: true
-        regexp: 'export PATH=(["]*)((?!.*?{{ item }}).*?)(["]*)$'
-        line: 'export PATH=\1\2:{{ item }}\3'
-      with_items: "{{ extra_paths }}"
-
+        regexp: 'export PATH=.*'
+        line: 'export PATH={{ extra_paths | join(":") }}'
