@@ -10,6 +10,10 @@
       - aws
     extra_paths:
       - '~/Library/Python/3.7/bin'
+      - "~/bin"
+    env_vars:
+      PYENV_ROOT: ~/.pyenv
+      LANG: en_US.UTF-8
 
   tasks:  
     - name: Enable passwordless sudo
@@ -58,25 +62,30 @@
       lineinfile:
         dest: ~/.zshrc
         state: present
-        backrefs: true
         regexp: 'ZSH_THEME=.*'
         line: 'ZSH_THEME="gentoo"'
-
-    - name: Ensure LANG var is set
+    
+    - name: Ensure pyenv is initiated
       become: false
       lineinfile:
         dest: ~/.zshrc
         state: present
-        backrefs: true
-        regexp: 'export LANG=.*'
-        line: 'export LANG=en_US.UTF-8'
+        line: 'eval "$(pyenv init -)"'
+
+    - name: Ensure needed env vars are set
+      become: false
+      lineinfile:
+        dest: ~/.zshrc
+        state: present
+        insertbefore: "export PATH=.*"
+        line: 'export {{ item.key }}="{{ item.value }}"'
+      with_dict: "{{ env_vars }}"
   
     - name: Ensure zsh plugins are set
       become: false
       lineinfile:
         dest: ~/.zshrc
         state: present
-        backrefs: true
         regexp: 'plugins=.*'
         line: 'plugins=( {{ zsh_plugins | join(" ") }} )'
 
